@@ -1,3 +1,7 @@
+function LED消灯 () {
+    strip.showColor(neopixel.colors(NeoPixelColors.Black))
+    strip.show()
+}
 function コントローラ処理 () {
     radio.setGroup(無線グループ)
     if (input.buttonIsPressed(Button.A)) {
@@ -26,6 +30,24 @@ function コントローラ処理 () {
     radio.sendNumber(buttonNo)
     radio.setGroup(0)
     basic.pause(50)
+}
+function 音通信処理 () {
+    if (input.buttonIsPressed(Button.A)) {
+        radio.sendString("A")
+        while (input.buttonIsPressed(Button.A)) {
+        	
+        }
+    }
+    if (input.buttonIsPressed(Button.B)) {
+        radio.sendString("B")
+        while (input.buttonIsPressed(Button.B)) {
+        	
+        }
+    }
+}
+function 音通信初期化 () {
+    radio.setGroup(33)
+    LED初期化()
 }
 function 時計処理 () {
     basic.pause(100)
@@ -62,24 +84,17 @@ function 時計処理 () {
     strip.show()
 }
 function 時計初期化 () {
-    strip = neopixel.create(DigitalPin.P1, 4, NeoPixelMode.RGB)
-    strip.setBrightness(32)
-    color = [
-    neopixel.colors(NeoPixelColors.Black),
-    neopixel.colors(NeoPixelColors.Red),
-    neopixel.colors(NeoPixelColors.Green),
-    neopixel.colors(NeoPixelColors.Blue),
-    neopixel.colors(NeoPixelColors.Yellow),
-    neopixel.colors(NeoPixelColors.Violet),
-    neopixel.colors(NeoPixelColors.White),
-    neopixel.colors(NeoPixelColors.Orange)
-    ]
     pins.digitalWritePin(DigitalPin.P2, 0)
     pins.setPull(DigitalPin.P8, PinPullMode.PullUp)
     pins.setPull(DigitalPin.P12, PinPullMode.PullUp)
     pins.setPull(DigitalPin.P13, PinPullMode.PullUp)
+    LED初期化()
     ds3231.getClock()
     時刻表示(0)
+}
+function LED表示 () {
+    strip.showColor(neopixel.colors(NeoPixelColors.Orange))
+    strip.show()
 }
 function 表示方向 () {
     if (input.rotation(Rotation.Pitch) <= -40) {
@@ -93,15 +108,49 @@ function 表示方向 () {
         watchfont.setRotatation(rotate.left)
     }
 }
+function 音通信受信処理 (受信データ: string) {
+    if (受信データ.includes("A")) {
+        LED表示()
+        watchfont.showIcon(
+        "01110",
+        "10001",
+        "11111",
+        "10001",
+        "10001"
+        )
+        バイブレーション()
+        LED消灯()
+    } else if (受信データ.includes("B")) {
+        LED表示()
+        watchfont.showIcon(
+        "11110",
+        "10001",
+        "11110",
+        "10001",
+        "11110"
+        )
+        バイブレーション()
+        LED消灯()
+    }
+}
 radio.onReceivedString(function (receivedString) {
-    serial.writeLine("" + radio.receivedPacket(RadioPacketProperty.SignalStrength) + ":" + receivedString)
-    if (radio.receivedPacket(RadioPacketProperty.SignalStrength) >= -70) {
-        受信文字 = receivedString.split(",")
-        if (受信文字[0] == "CQ") {
-            radio.sendString("" + 受信文字[1] + "," + control.deviceName() + "," + convertToText(無線グループ))
+    if (TYPE == 1) {
+        serial.writeLine("" + radio.receivedPacket(RadioPacketProperty.SignalStrength) + ":" + receivedString)
+        if (radio.receivedPacket(RadioPacketProperty.SignalStrength) >= -70) {
+            受信文字 = receivedString.split(",")
+            if (受信文字[0] == "CQ") {
+                radio.sendString("" + 受信文字[1] + "," + control.deviceName() + "," + convertToText(無線グループ))
+            }
         }
+    } else if (TYPE == 2) {
+        音通信受信処理(receivedString)
     }
 })
+function バイブレーション () {
+    pins.digitalWritePin(DigitalPin.P2, 1)
+    basic.pause(200)
+    pins.digitalWritePin(DigitalPin.P2, 0)
+}
 function 秒表示 () {
     表示方向()
     watchfont.showNumber2(ds3231.getClockData(clockData.second))
@@ -111,6 +160,9 @@ function コントローラ初期化 () {
     watchfont.showNumber2(無線グループ)
     radio.setTransmitPower(7)
     serial.redirectToUSB()
+    LED初期化()
+}
+function LED初期化 () {
     strip = neopixel.create(DigitalPin.P1, 4, NeoPixelMode.RGB)
     strip.setBrightness(32)
     color = [
@@ -141,26 +193,32 @@ function 時刻表示 (タイプ: number) {
 }
 let 受信文字: string[] = []
 let color: number[] = []
-let strip: neopixel.Strip = null
 let buttonNo = 0
 let X = 0
 let Y = 0
 let 無線グループ = 0
+let strip: neopixel.Strip = null
+let TYPE = 0
 pins.digitalWritePin(DigitalPin.P2, 0)
 pins.setPull(DigitalPin.P5, PinPullMode.PullUp)
 pins.setPull(DigitalPin.P11, PinPullMode.PullUp)
 pins.setPull(DigitalPin.P8, PinPullMode.PullUp)
 pins.setPull(DigitalPin.P12, PinPullMode.PullUp)
 pins.setPull(DigitalPin.P13, PinPullMode.PullUp)
-let TYPE = pins.digitalReadPin(DigitalPin.P5)
-if (TYPE == 0) {
+TYPE = 1 - pins.digitalReadPin(DigitalPin.P5)
+TYPE += (1 - pins.digitalReadPin(DigitalPin.P11)) * 2
+if (TYPE == 1) {
     コントローラ初期化()
+} else if (TYPE == 2) {
+    音通信初期化()
 } else {
     時計初期化()
 }
 basic.forever(function () {
-    if (TYPE == 0) {
+    if (TYPE == 1) {
         コントローラ処理()
+    } else if (TYPE == 2) {
+        音通信処理()
     } else {
         時計処理()
     }

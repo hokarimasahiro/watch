@@ -2,6 +2,18 @@ function LED消灯 () {
     strip.showColor(neopixel.colors(NeoPixelColors.Black))
     strip.show()
 }
+function 時刻送信 () {
+    ds3231.getClock()
+    serial.writeNumbers([
+    ds3231.getClockData(clockData.year),
+    ds3231.getClockData(clockData.month),
+    ds3231.getClockData(clockData.day),
+    ds3231.getClockData(clockData.weekday),
+    ds3231.getClockData(clockData.hour),
+    ds3231.getClockData(clockData.minute),
+    ds3231.getClockData(clockData.second)
+    ])
+}
 function コントローラ処理 () {
     radio.setGroup(無線グループ)
     if (input.buttonIsPressed(Button.A)) {
@@ -30,6 +42,15 @@ function コントローラ処理 () {
     radio.sendNumber(buttonNo)
     radio.setGroup(0)
     basic.pause(50)
+}
+function 時計設定 (データ: string[]) {
+    ds3231.setClockData(clockData.year, parseFloat(データ[1]))
+    ds3231.setClockData(clockData.month, parseFloat(データ[2]))
+    ds3231.setClockData(clockData.day, parseFloat(データ[3]))
+    ds3231.setClockData(clockData.hour, parseFloat(データ[4]))
+    ds3231.setClockData(clockData.minute, parseFloat(データ[5]))
+    ds3231.setClockData(clockData.second, parseFloat(データ[6]))
+    ds3231.setClock()
 }
 function 音通信処理 () {
     if (input.buttonIsPressed(Button.A)) {
@@ -92,6 +113,15 @@ function 時計初期化 () {
     ds3231.getClock()
     時刻表示(0)
 }
+serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+    シリアルデータ = serial.readUntil(serial.delimiters(Delimiters.NewLine))
+    if (シリアルデータ.charAt(0) == "g") {
+        時刻送信()
+    } else if (シリアルデータ.charAt(0) == "s") {
+        時計設定(シリアルデータ.split(","))
+        時刻送信()
+    }
+})
 function LED表示 () {
     strip.showColor(neopixel.colors(NeoPixelColors.Orange))
     strip.show()
@@ -192,6 +222,7 @@ function 時刻表示 (タイプ: number) {
     }
 }
 let 受信文字: string[] = []
+let シリアルデータ = ""
 let color: number[] = []
 let buttonNo = 0
 let X = 0
@@ -214,6 +245,7 @@ if (TYPE == 1) {
 } else {
     時計初期化()
 }
+serial.redirectToUSB()
 basic.forever(function () {
     if (TYPE == 1) {
         コントローラ処理()

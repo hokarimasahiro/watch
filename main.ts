@@ -24,19 +24,7 @@ function コントローラ処理 () {
         Y = 0
     }
     radio.sendString("$," + X + "," + Y)
-    buttonNo = 0
-    if (pins.digitalReadPin(DigitalPin.P8) == 0) {
-        buttonNo += 1
-    }
-    if (pins.digitalReadPin(DigitalPin.P12) == 0) {
-        buttonNo += 2
-    }
-    if (pins.digitalReadPin(DigitalPin.P13) == 0) {
-        buttonNo += 4
-    }
-    if (input.isGesture(Gesture.Shake)) {
-        buttonNo = 6
-    }
+    ボタン番号()
     strip.showColor(color[buttonNo])
     strip.show()
     radio.sendNumber(buttonNo)
@@ -70,6 +58,21 @@ function 音通信初期化 () {
     radio.setGroup(33)
     LED初期化()
 }
+function ボタン番号 () {
+    buttonNo = 0
+    if (pins.digitalReadPin(DigitalPin.P8) == 0) {
+        buttonNo += 1
+    }
+    if (pins.digitalReadPin(DigitalPin.P12) == 0) {
+        buttonNo += 2
+    }
+    if (pins.digitalReadPin(DigitalPin.P13) == 0) {
+        buttonNo += 4
+    }
+    if (input.isGesture(Gesture.Shake)) {
+        buttonNo = 6
+    }
+}
 function 時計処理 () {
     basic.pause(100)
     ds3231.getClock()
@@ -88,24 +91,10 @@ function 時計処理 () {
     } else {
         basic.clearScreen()
     }
-    buttonNo = 0
-    if (pins.digitalReadPin(DigitalPin.P8) == 0) {
-        buttonNo += 1
-    }
-    if (pins.digitalReadPin(DigitalPin.P12) == 0) {
-        buttonNo += 2
-    }
-    if (pins.digitalReadPin(DigitalPin.P13) == 0) {
-        buttonNo += 4
-    }
-    if (input.isGesture(Gesture.Shake)) {
-        buttonNo = 6
-    }
+    ボタン番号()
     if (buttonNo == 1) {
         時刻送信()
     }
-    strip.showColor(color[buttonNo])
-    strip.show()
 }
 function 時計初期化 () {
     pins.digitalWritePin(DigitalPin.P2, 0)
@@ -224,8 +213,8 @@ function 時刻表示 (タイプ: number) {
 }
 let 受信文字: string[] = []
 let シリアルデータ = ""
-let color: number[] = []
 let buttonNo = 0
+let color: number[] = []
 let X = 0
 let Y = 0
 let 無線グループ = 0
@@ -239,6 +228,9 @@ pins.setPull(DigitalPin.P12, PinPullMode.PullUp)
 pins.setPull(DigitalPin.P13, PinPullMode.PullUp)
 TYPE = 1 - pins.digitalReadPin(DigitalPin.P5)
 TYPE += (1 - pins.digitalReadPin(DigitalPin.P11)) * 2
+while (pins.digitalReadPin(DigitalPin.P5) == 0 || pins.digitalReadPin(DigitalPin.P11) == 0) {
+	
+}
 if (TYPE == 1) {
     コントローラ初期化()
 } else if (TYPE == 2) {

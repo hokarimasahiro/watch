@@ -101,6 +101,9 @@ function 時計処理 () {
     if (input.isGesture(Gesture.Shake)) {
         buttonNo = 6
     }
+    if (buttonNo == 1) {
+        時刻送信()
+    }
     strip.showColor(color[buttonNo])
     strip.show()
 }
@@ -165,7 +168,6 @@ function 音通信受信処理 (受信データ: string) {
 }
 radio.onReceivedString(function (receivedString) {
     if (TYPE == 1) {
-        serial.writeLine("" + radio.receivedPacket(RadioPacketProperty.SignalStrength) + ":" + receivedString)
         if (radio.receivedPacket(RadioPacketProperty.SignalStrength) >= -70) {
             受信文字 = receivedString.split(",")
             if (受信文字[0] == "CQ") {
@@ -189,7 +191,6 @@ function コントローラ初期化 () {
     無線グループ = Math.abs(control.deviceSerialNumber()) % 98 + 1
     watchfont.showNumber2(無線グループ)
     radio.setTransmitPower(7)
-    serial.redirectToUSB()
     LED初期化()
 }
 function LED初期化 () {

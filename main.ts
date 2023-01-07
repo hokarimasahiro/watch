@@ -111,7 +111,6 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         時刻送信()
     } else if (シリアルデータ.charAt(0) == "s") {
         時計設定(シリアルデータ.split(","))
-        時刻送信()
     }
 })
 function LED表示 () {
@@ -197,6 +196,7 @@ function LED初期化 () {
     ]
 }
 function 時刻表示 (タイプ: number) {
+    時刻送信()
     if (タイプ == 0) {
         表示方向()
         watchfont.showNumber2(ds3231.getClockData(clockData.hour))
@@ -228,6 +228,7 @@ pins.setPull(DigitalPin.P12, PinPullMode.PullUp)
 pins.setPull(DigitalPin.P13, PinPullMode.PullUp)
 TYPE = 1 - pins.digitalReadPin(DigitalPin.P5)
 TYPE += (1 - pins.digitalReadPin(DigitalPin.P11)) * 2
+watchfont.showNumber2(TYPE)
 while (pins.digitalReadPin(DigitalPin.P5) == 0 || pins.digitalReadPin(DigitalPin.P11) == 0) {
 	
 }

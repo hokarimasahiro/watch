@@ -52,6 +52,21 @@ function 音通信処理 () {
         while (input.buttonIsPressed(Button.B)) {
         	
         }
+    } else if (pins.digitalReadPin(DigitalPin.P8) == 0) {
+        music.play(music.tonePlayable(3000, music.beat(BeatFraction.Whole)), music.PlaybackMode.UntilDone)
+        basic.pause(100)
+        music.play(music.tonePlayable(3000, music.beat(BeatFraction.Quarter)), music.PlaybackMode.UntilDone)
+        basic.pause(100)
+        music.play(music.tonePlayable(3000, music.beat(BeatFraction.Quarter)), music.PlaybackMode.UntilDone)
+        basic.pause(100)
+        music.play(music.tonePlayable(3000, music.beat(BeatFraction.Quarter)), music.PlaybackMode.UntilDone)
+        basic.pause(100)
+        music.play(music.tonePlayable(3000, music.beat(BeatFraction.Quarter)), music.PlaybackMode.UntilDone)
+        while (pins.digitalReadPin(DigitalPin.P8) == 0) {
+        	
+        }
+    } else {
+    	
     }
 }
 function 音通信初期化 () {

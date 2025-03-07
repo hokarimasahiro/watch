@@ -8,7 +8,7 @@
         "pxt-watchfont": "github:hokarimasahiro/pxt-watchfont#2b458eef5787353c9592abaf3f176105f102b51b",
         "pxt-getradiogroup": "github:hokarimasahiro/pxt-getradiogroup#78e41e0b856518157dbcb75b1baf4955bb02abaa",
         "neopixel": "github:microsoft/pxt-neopixel#v0.7.3",
-        "pxt-ds3231": "github:hokarimasahiro/pxt-ds3231#6cd22010740d621df2ed2dbe57fa149b1d67ff4a"
+        "pxt-ds3231": "github:hokarimasahiro/pxt-ds3231#90cd86b5d0c0f2c105f75efd5d6de3489231341a"
     },
     "files": [
         "main.blocks",
